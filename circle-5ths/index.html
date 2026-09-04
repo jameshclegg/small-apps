@@ -1,0 +1,242 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="A fast, focused circle of fifths and scale degree recall trainer."
+    />
+    <title>Orbit — Circle of Fifths Trainer</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div class="ambient ambient-one"></div>
+    <div class="ambient ambient-two"></div>
+
+    <header class="site-header">
+      <a class="brand" href="#" aria-label="Orbit home">
+        <span class="brand-mark">O</span>
+        <span>Orbit</span>
+      </a>
+      <nav aria-label="Primary navigation">
+        <button class="nav-link active" data-page="practice">Practice</button>
+        <button class="nav-link" data-page="results">Results</button>
+      </nav>
+      <div class="streak" id="streak">0 day streak</div>
+    </header>
+
+    <main>
+      <section class="page active" id="practice-page">
+        <div class="hero">
+          <p class="eyebrow">Music theory, at reflex speed</p>
+          <h1>Know the key<br /><em>before you think.</em></h1>
+          <p class="hero-copy">
+            Build instant recall for the circle of fifths and every diatonic chord.
+            Your slowest answers automatically become tomorrow's practice.
+          </p>
+        </div>
+
+        <div class="mode-tabs" role="tablist" aria-label="Practice mode">
+          <button class="mode-tab active" data-mode="circle" role="tab">Circle sprint</button>
+          <button class="mode-tab" data-mode="degrees" role="tab">Degree drill</button>
+          <button class="mode-tab" data-mode="weak" role="tab">
+            Weak spots <span class="badge" id="weak-count">0</span>
+          </button>
+        </div>
+
+        <section class="trainer-card">
+          <div id="setup-view">
+            <div class="setup-header">
+              <div>
+                <p class="card-kicker" id="setup-kicker">Circle sprint</p>
+                <h2 id="setup-title">Choose your level</h2>
+              </div>
+              <span class="shortcut">Press <kbd>Enter</kbd> to start</span>
+            </div>
+
+            <div class="level-grid" id="circle-levels">
+              <button class="level-card selected" data-level="major">
+                <span class="level-number">01</span>
+                <strong>Major keys</strong>
+                <small>The essential circle</small>
+              </button>
+              <button class="level-card" data-level="minor">
+                <span class="level-number">02</span>
+                <strong>Minor keys</strong>
+                <small>Relative minor fluency</small>
+              </button>
+              <button class="level-card" data-level="mixed">
+                <span class="level-number">03</span>
+                <strong>Mixed</strong>
+                <small>No safety rails</small>
+              </button>
+            </div>
+
+            <div class="setup-row" id="degree-options" hidden>
+              <label>
+                Questions per sprint
+                <select id="question-count">
+                  <option value="10">10 questions</option>
+                  <option value="20" selected>20 questions</option>
+                  <option value="30">30 questions</option>
+                </select>
+              </label>
+              <p>Major-key diatonic chords, including diminished vii°.</p>
+            </div>
+
+            <div class="setup-row" id="weak-options" hidden>
+              <p id="weak-summary">
+                Complete a degree drill first. Missed and slow answers will appear here.
+              </p>
+            </div>
+
+            <button class="primary-button" id="start-button">
+              Start sprint <span>→</span>
+            </button>
+          </div>
+
+          <div id="circle-view" class="quiz-view" hidden>
+            <div class="quiz-topline">
+              <button class="text-button" data-action="quit">← Quit</button>
+              <div class="timer" id="circle-timer">00:00.0</div>
+            </div>
+            <div class="prompt-block">
+              <p class="card-kicker" id="circle-key-type">Major key</p>
+              <h2>Start at <span id="circle-start">C</span></h2>
+              <div class="direction" id="circle-direction">↗ Up in fifths</div>
+            </div>
+            <form id="circle-form">
+              <label for="circle-answer">Type all 12 keys in order</label>
+              <input
+                id="circle-answer"
+                autocomplete="off"
+                spellcheck="false"
+                placeholder="C G D A E B F# C# Ab Eb Bb F"
+              />
+              <p class="input-help">Separate notes with spaces or commas. ♯/♭ and #/b both work.</p>
+              <p class="error-message" id="circle-error" aria-live="polite"></p>
+              <button class="primary-button" type="submit">Check answer <span>→</span></button>
+            </form>
+          </div>
+
+          <div id="degree-view" class="quiz-view" hidden>
+            <div class="quiz-topline">
+              <button class="text-button" data-action="quit">← Quit</button>
+              <span class="progress-label" id="degree-progress">1 / 20</span>
+              <div class="timer" id="degree-timer">00:00.0</div>
+            </div>
+            <div class="progress-track"><span id="progress-bar"></span></div>
+            <div class="degree-prompt">
+              <p class="card-kicker">Name the diatonic chord</p>
+              <h2>What is the <span id="degree-roman">iii</span> of <span id="degree-key">G</span>?</h2>
+            </div>
+            <form id="degree-form">
+              <label for="degree-answer">Your answer</label>
+              <input
+                id="degree-answer"
+                autocomplete="off"
+                spellcheck="false"
+                placeholder="Bm"
+              />
+              <p class="error-message" id="degree-error" aria-live="polite"></p>
+              <button class="primary-button" type="submit">Submit <span>→</span></button>
+            </form>
+          </div>
+
+          <div id="complete-view" class="complete-view" hidden>
+            <div class="completion-ring">✓</div>
+            <p class="card-kicker">Sprint complete</p>
+            <h2 id="complete-time">00:00.0</h2>
+            <p id="complete-summary">A new personal best.</p>
+            <div class="completion-stats" id="completion-stats"></div>
+            <div class="button-row">
+              <button class="secondary-button" id="view-results">View results</button>
+              <button class="primary-button" id="again-button">Go again <span>↻</span></button>
+            </div>
+          </div>
+        </section>
+
+        <section class="today-strip">
+          <div>
+            <p class="card-kicker">Today</p>
+            <strong id="today-sessions">0 sprints</strong>
+          </div>
+          <div>
+            <p class="card-kicker">Best circle</p>
+            <strong id="today-circle">—</strong>
+          </div>
+          <div>
+            <p class="card-kicker">Best degree drill</p>
+            <strong id="today-degrees">—</strong>
+          </div>
+          <div>
+            <p class="card-kicker">Recall health</p>
+            <strong id="recall-health">Fresh</strong>
+          </div>
+        </section>
+      </section>
+
+      <section class="page" id="results-page">
+        <div class="results-heading">
+          <div>
+            <p class="eyebrow">Your progress</p>
+            <h1>Speed becomes<br /><em>instinct.</em></h1>
+          </div>
+          <label class="filter-label">
+            Drill
+            <select id="results-filter">
+              <option value="all">All drills</option>
+              <option value="circle">Circle sprint</option>
+              <option value="degrees">Degree drill</option>
+              <option value="weak">Weak spots</option>
+            </select>
+          </label>
+        </div>
+
+        <div class="stat-grid">
+          <article><p>Personal best</p><strong id="stat-best">—</strong></article>
+          <article><p>Total sprints</p><strong id="stat-total">0</strong></article>
+          <article><p>Questions answered</p><strong id="stat-answers">0</strong></article>
+          <article><p>Current streak</p><strong id="stat-streak">0 days</strong></article>
+        </div>
+
+        <section class="chart-card">
+          <div class="chart-header">
+            <div>
+              <p class="card-kicker">Daily pace</p>
+              <h2>Best, median &amp; slowest</h2>
+            </div>
+            <div class="legend">
+              <span><i class="best"></i>Best</span>
+              <span><i class="median"></i>Median</span>
+              <span><i class="worst"></i>Slowest</span>
+            </div>
+          </div>
+          <div class="chart-wrap">
+            <canvas id="results-chart" aria-label="Daily result times chart"></canvas>
+            <div class="empty-state" id="chart-empty">Complete a sprint to begin your chart.</div>
+          </div>
+        </section>
+
+        <section class="history-card">
+          <div class="chart-header">
+            <div>
+              <p class="card-kicker">Logbook</p>
+              <h2>Recent attempts</h2>
+            </div>
+            <button class="text-button danger" id="clear-results">Clear history</button>
+          </div>
+          <div class="history-list" id="history-list"></div>
+        </section>
+      </section>
+    </main>
+
+    <footer>
+      <span>Orbit</span>
+      <span>Train slowly. Recall instantly.</span>
+    </footer>
+
+    <script type="module" src="app.js"></script>
+  </body>
+</html>
