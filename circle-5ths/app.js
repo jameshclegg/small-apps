@@ -184,7 +184,11 @@ function submitCircle(event) {
   }
   if (!answersMatch(actual, state.currentCircle.answer)) {
     const mismatch = actual.findIndex((value, index) => !answersMatch([value], [state.currentCircle.answer[index]]));
-    $("#circle-error").textContent = `Check position ${mismatch + 1}. The sequence breaks after ${mismatch ? actual[mismatch - 1] : "the start"}.`;
+    const expected = state.currentCircle.answer[mismatch];
+    const direction = state.currentCircle.direction === "fifths" ? "fifths" : "fourths";
+    $("#circle-error").textContent =
+      `Position ${mismatch + 1} should be ${expected}, but you entered ${actual[mismatch]}. ` +
+      `Going up in ${direction}, the sequence starts ${state.currentCircle.answer.slice(0, mismatch + 1).join(" → ")}.`;
     return;
   }
   const duration = stopTimer();
