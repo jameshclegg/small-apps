@@ -237,6 +237,49 @@ select {
   background: var(--surface-raised);
   color: var(--text);
 }
+.toggle-option {
+  grid-template-columns: auto auto;
+  align-items: center;
+  column-gap: 12px;
+  cursor: pointer;
+  color: var(--text);
+}
+.toggle-option input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+}
+.toggle {
+  position: relative;
+  width: 44px;
+  height: 24px;
+  border: 1px solid var(--line);
+  border-radius: 99px;
+  background: #111116;
+  transition: background .2s, border-color .2s;
+}
+.toggle::after {
+  content: "";
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: var(--muted);
+  transition: transform .2s, background .2s;
+}
+.toggle-option input:checked + .toggle {
+  border-color: var(--lime);
+  background: rgba(219,255,100,.12);
+}
+.toggle-option input:checked + .toggle::after {
+  transform: translateX(20px);
+  background: var(--lime);
+}
+.toggle-option input:focus-visible + .toggle { outline: 2px solid var(--lime); outline-offset: 3px; }
+.toggle-option small { display: block; margin-top: 2px; color: var(--muted); font-weight: 400; }
 
 .text-button { padding: 5px 0; color: var(--muted); }
 .text-button:hover { color: var(--text); }

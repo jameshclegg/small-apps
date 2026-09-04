@@ -78,7 +78,7 @@ function selectMode(mode) {
     mode === "circle" ? "Circle sprint" : mode === "degrees" ? "Degree drill" : "Adaptive practice";
   $("#setup-title").textContent =
     mode === "circle" ? "Choose your level" : mode === "degrees" ? "Set your distance" : "Train your weak spots";
-  $("#start-button").disabled = mode === "weak" && Object.keys(loadData().gaps).length === 0;
+  $("#start-button").disabled = mode === "weak" && eligibleGaps(loadData()).length === 0;
   showTrainerView("setup");
 }
 
@@ -116,10 +116,23 @@ function gapKey(key, degreeIndex) {
   return `${key}|${degreeIndex}`;
 }
 
+function allowedDegreeIndices() {
+  return $("#include-diminished").checked ? [1, 2, 3, 4, 5, 6] : [1, 2, 3, 4, 5];
+}
+
+function eligibleGaps(data) {
+  const allowed = new Set(allowedDegreeIndices());
+  return Object.entries(data.gaps).filter(([key]) => {
+    const degreeIndex = Number(key.split("|")[1]);
+    return allowed.has(degreeIndex);
+  });
+}
+
 function createQuestion(sourceMode) {
   const data = loadData();
-  if (sourceMode === "weak" && Object.keys(data.gaps).length) {
-    const weighted = Object.entries(data.gaps).flatMap(([key, score]) =>
+  const gaps = eligibleGaps(data);
+  if (sourceMode === "weak" && gaps.length) {
+    const weighted = gaps.flatMap(([key, score]) =>
       Array.from({ length: Math.max(1, Math.ceil(score)) }, () => key),
     );
     const [key, degree] = randomItem(weighted).split("|");
@@ -127,7 +140,7 @@ function createQuestion(sourceMode) {
   }
   return {
     key: randomItem(MAJOR_KEYS),
-    degreeIndex: Math.floor(Math.random() * ROMANS.length),
+    degreeIndex: randomItem(allowedDegreeIndices()),
   };
 }
 
@@ -270,7 +283,7 @@ function quitQuiz() {
 }
 
 function refreshWeakSpots() {
-  const gaps = Object.entries(loadData().gaps).sort((a, b) => b[1] - a[1]);
+  const gaps = eligibleGaps(loadData()).sort((a, b) => b[1] - a[1]);
   $("#weak-count").textContent = gaps.length;
   $("#weak-summary").textContent = gaps.length
     ? `${gaps.length} recall gap${gaps.length === 1 ? "" : "s"} queued. The weakest combinations will appear most often.`
@@ -428,6 +441,7 @@ $("#degree-form").addEventListener("submit", submitDegree);
 $("#again-button").addEventListener("click", startCurrentMode);
 $("#view-results").addEventListener("click", () => showPage("results"));
 $("#results-filter").addEventListener("change", renderResults);
+$("#include-diminished").addEventListener("change", refreshWeakSpots);
 $("#clear-results").addEventListener("click", () => {
   if (confirm("Clear all saved attempts and weak-spot data?")) {
     saveData({ attempts: [], gaps: {} });
