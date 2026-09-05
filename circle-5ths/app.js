@@ -150,6 +150,9 @@ function startDegrees() {
   state.questions = Array.from({ length: count }, () => createQuestion(state.mode));
   state.questionIndex = 0;
   state.answers = [];
+  const showWheel = $("#show-degree-wheel").checked;
+  $("#degree-wheel").hidden = !showWheel;
+  $(".degree-layout").classList.toggle("without-wheel", !showWheel);
   showTrainerView("degree");
   startTimer($("#degree-timer"));
   showQuestion();

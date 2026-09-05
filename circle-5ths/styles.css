@@ -244,6 +244,7 @@ select {
   cursor: pointer;
   color: var(--text);
 }
+.toggle-group { display: flex; align-items: center; gap: 28px; }
 .toggle-option input {
   position: absolute;
   width: 1px;
@@ -304,6 +305,11 @@ select {
   margin: 0 auto;
 }
 .degree-layout h2 { text-align: left; }
+.degree-layout.without-wheel {
+  display: block;
+  max-width: 760px;
+}
+.degree-layout.without-wheel h2 { text-align: center; }
 .fifths-wheel {
   position: relative;
   width: 100%;
@@ -507,6 +513,7 @@ footer span:first-child { color: var(--text); font-weight: 700; }
   .degree-layout { grid-template-columns: 1fr; }
   .fifths-wheel { width: min(300px, 88%); margin: 0 auto; }
   .degree-layout h2 { text-align: center; }
+  .toggle-group { align-items: flex-start; flex-direction: column; gap: 16px; }
 }
 
 @media (max-width: 480px) {
