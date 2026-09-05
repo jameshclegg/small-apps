@@ -24,6 +24,7 @@ const state = {
   questionIndex: 0,
   questionStartedAt: 0,
   answers: [],
+  answerLocked: false,
 };
 
 const $ = (selector) => document.querySelector(selector);
@@ -162,8 +163,45 @@ function showQuestion() {
   $("#degree-key").textContent = question.key;
   $("#degree-answer").value = "";
   $("#degree-error").textContent = "";
+  $("#degree-error").classList.remove("correct");
+  state.answerLocked = false;
+  renderDegreeWheel(question);
   state.questionStartedAt = performance.now();
   requestAnimationFrame(() => $("#degree-answer").focus());
+}
+
+function wheelPosition(note) {
+  const notePitch = pitchClass(note).pitch;
+  return MAJOR_KEYS.findIndex((key) => pitchClass(key).pitch === notePitch);
+}
+
+function renderDegreeWheel(question, revealed = false, correct = null) {
+  const answer = degreeAnswer(question.key, question.degreeIndex);
+  const keyIndex = MAJOR_KEYS.indexOf(question.key);
+  const answerIndex = wheelPosition(answer);
+  const nodes = MAJOR_KEYS.map((note, index) => {
+    const angle = ((index * 30) - 90) * (Math.PI / 180);
+    const left = 50 + Math.cos(angle) * 43;
+    const top = 50 + Math.sin(angle) * 43;
+    const classes = [
+      "wheel-note",
+      index === keyIndex ? "source" : "",
+      index === answerIndex ? "target" : "",
+      revealed ? "revealed" : "",
+      revealed && index === answerIndex ? (correct ? "answer-correct" : "answer-incorrect") : "",
+    ].filter(Boolean).join(" ");
+    const label = revealed ? (index === answerIndex ? answer : note) : (index === keyIndex ? note : "");
+    const accessibleLabel = index === keyIndex
+      ? `Question key ${note}`
+      : index === answerIndex
+        ? `Answer position${revealed ? `, ${answer}` : ""}`
+        : revealed ? note : "Hidden position";
+    return `<span class="${classes}" style="left:${left}%;top:${top}%" aria-label="${accessibleLabel}">${label}</span>`;
+  }).join("");
+  $("#degree-wheel").innerHTML = `
+    ${nodes}
+    <span class="wheel-center"><strong>${ROMANS[question.degreeIndex]}</strong><small>of ${question.key}</small></span>
+  `;
 }
 
 function recordAttempt(attempt) {
@@ -236,21 +274,25 @@ function updateGap(question, correct, elapsed) {
 
 function submitDegree(event) {
   event.preventDefault();
+  if (state.answerLocked) return;
   const answer = $("#degree-answer").value.trim();
   if (!answer) return;
   const question = state.questions[state.questionIndex];
   const expected = degreeAnswer(question.key, question.degreeIndex);
   const elapsed = performance.now() - state.questionStartedAt;
   const correct = degreeMatches(answer, expected);
+  state.answerLocked = true;
   state.answers.push({ ...question, answer, expected, correct, elapsed });
   updateGap(question, correct, elapsed);
+  renderDegreeWheel(question, true, correct);
 
   if (!correct) {
     $("#degree-error").textContent = `Not quite — the answer is ${expected}.`;
-    $("#degree-answer").select();
-    setTimeout(() => advanceDegree(), 850);
+    setTimeout(() => advanceDegree(), 1100);
   } else {
-    advanceDegree();
+    $("#degree-error").textContent = `Correct — ${expected}.`;
+    $("#degree-error").classList.add("correct");
+    setTimeout(() => advanceDegree(), 750);
   }
 }
 
