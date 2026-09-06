@@ -1,0 +1,122 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="Can you tell the Gallagher brothers apart? Test yourself over ten photos."
+    />
+    <title>Definitely Maybe Him — The Gallagher Quiz</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=DM+Mono:wght@400;500&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div class="grain" aria-hidden="true"></div>
+
+    <header class="site-header">
+      <a class="wordmark" href="#" aria-label="Restart the quiz">
+        <span>DEFINITELY</span>
+        <strong>MAYBE HIM</strong>
+      </a>
+      <button class="text-button" id="credits-button" type="button">Photo credits</button>
+    </header>
+
+    <main>
+      <section class="screen intro-screen active" id="intro-screen">
+        <div class="intro-copy">
+          <p class="eyebrow">The Gallagher brother identification test</p>
+          <h1>LIAM<br />OR <span>NOEL?</span></h1>
+          <p class="lede">
+            Same band. Same surname. Very different eyebrows. Identify ten faces
+            from our archive of sixty photos.
+          </p>
+          <button class="primary-button" id="start-button" type="button">
+            Start the quiz <span aria-hidden="true">→</span>
+          </button>
+          <p class="small-print">10 photos · 4–6 of each brother · no trick questions</p>
+        </div>
+
+        <div class="record" aria-hidden="true">
+          <div class="record-label">
+            <span>01</span>
+            <strong>WHO'S<br />WHO?</strong>
+            <small>PLAY LOUD</small>
+          </div>
+        </div>
+      </section>
+
+      <section class="screen quiz-screen" id="quiz-screen" aria-live="polite">
+        <div class="quiz-topline">
+          <p class="question-number">FACE <span id="question-number">01</span> / 10</p>
+          <p class="score-label">SCORE <span id="live-score">0</span></p>
+        </div>
+        <div class="progress-track" aria-hidden="true">
+          <span id="progress-bar"></span>
+        </div>
+
+        <article class="photo-card">
+          <div class="photo-frame">
+            <img id="face-photo" src="" alt="A photo of Liam or Noel Gallagher" />
+            <div class="photo-status" id="photo-status"></div>
+          </div>
+          <a class="photo-credit" id="photo-credit" href="#" target="_blank" rel="noreferrer">
+            Photo source
+          </a>
+        </article>
+
+        <div class="prompt-block">
+          <p>Who is this?</p>
+          <div class="answer-grid">
+            <button class="answer-button liam" data-answer="Liam" type="button">
+              <span class="key">L</span>
+              <strong>LIAM</strong>
+            </button>
+            <button class="answer-button noel" data-answer="Noel" type="button">
+              <span class="key">N</span>
+              <strong>NOEL</strong>
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <section class="screen results-screen" id="results-screen">
+        <p class="eyebrow">The verdict is in</p>
+        <div class="result-score"><span id="final-score">0</span><small>/10</small></div>
+        <h2 id="result-title">MAD FER IT</h2>
+        <p id="result-copy"></p>
+        <div class="result-actions">
+          <button class="primary-button" id="replay-button" type="button">
+            Play another round <span aria-hidden="true">↻</span>
+          </button>
+          <button class="text-button review-button" id="review-button" type="button">
+            Review answers
+          </button>
+        </div>
+        <div class="review-grid" id="review-grid" hidden></div>
+      </section>
+    </main>
+
+    <dialog id="credits-dialog">
+      <div class="dialog-header">
+        <div>
+          <p class="eyebrow">Openly licensed archive</p>
+          <h2>Photo credits</h2>
+        </div>
+        <button class="close-button" id="close-credits" type="button" aria-label="Close">×</button>
+      </div>
+      <p>
+        All photos are sourced from Wikimedia Commons. Individual creator and
+        licence details are listed below.
+      </p>
+      <div class="credits-list" id="credits-list"></div>
+    </dialog>
+
+    <script type="module" src="app.js"></script>
+  </body>
+</html>
