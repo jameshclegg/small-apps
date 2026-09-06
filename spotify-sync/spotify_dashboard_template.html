@@ -1,0 +1,137 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>My Spotify Atlas</title>
+<style>
+:root{--bg:#07110d;--panel:#0e1d17;--panel2:#13271f;--text:#f5fff9;--muted:#9ab3a6;--green:#1ed760;--lime:#b7f34a;--pink:#ff6b9e;--blue:#69b7ff;--gold:#ffc857;--line:#294338}
+*{box-sizing:border-box}body{margin:0;background:radial-gradient(circle at 15% 0,#183c2a 0,transparent 33%),var(--bg);color:var(--text);font:15px/1.45 Inter,Segoe UI,sans-serif}
+header{padding:48px max(24px,6vw) 28px;border-bottom:1px solid var(--line)}h1{font-size:clamp(38px,7vw,84px);line-height:.92;margin:0;letter-spacing:-.06em}h1 span{color:var(--green)}
+.lede{max-width:760px;color:var(--muted);font-size:17px}.controls{display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-top:24px}
+select,button{background:var(--panel2);color:var(--text);border:1px solid var(--line);border-radius:999px;padding:10px 16px;font:inherit}button{cursor:pointer}button:hover{border-color:var(--green)}
+main{padding:24px max(18px,5vw) 80px}.stats,.grid{display:grid;gap:16px}.stats{grid-template-columns:repeat(auto-fit,minmax(145px,1fr));margin:20px 0}.grid{grid-template-columns:repeat(12,1fr)}
+.card{background:linear-gradient(145deg,rgba(19,39,31,.96),rgba(11,24,18,.96));border:1px solid var(--line);border-radius:20px;padding:20px;overflow:hidden;box-shadow:0 18px 50px #0004}
+.span12{grid-column:span 12}.span8{grid-column:span 8}.span7{grid-column:span 7}.span6{grid-column:span 6}.span5{grid-column:span 5}.span4{grid-column:span 4}
+@media(max-width:900px){.span8,.span7,.span6,.span5,.span4{grid-column:span 12}}
+.metric strong{display:block;font-size:30px;letter-spacing:-.04em}.metric small,.subtle{color:var(--muted)}h2{font-size:26px;margin:0 0 4px}h3{font-size:17px;margin:0 0 16px;color:var(--muted);font-weight:500}
+.chart{min-height:220px}.bars{display:grid;gap:9px}.bar-row{display:grid;grid-template-columns:minmax(120px,1.4fr) 3fr 70px;gap:10px;align-items:center}.bar-label{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.bar-track{height:10px;background:#ffffff0b;border-radius:20px;overflow:hidden}.bar-fill{height:100%;border-radius:20px;background:linear-gradient(90deg,var(--green),var(--lime))}.bar-value{text-align:right;color:var(--muted);font-variant-numeric:tabular-nums}
+svg{width:100%;height:auto;overflow:visible}.axis{stroke:#466255;stroke-width:1}.gridline{stroke:#294338;stroke-width:1}.line{fill:none;stroke:var(--green);stroke-width:3}.area{fill:#1ed76024}.dot{fill:var(--green)}
+.calendar{display:grid;grid-auto-flow:column;grid-template-rows:repeat(7,11px);grid-auto-columns:11px;gap:3px;overflow-x:auto;padding:8px 0 14px}.day{width:11px;height:11px;border-radius:2px;background:#15251e}.day:hover{outline:2px solid white}
+.clock{display:grid;grid-template-columns:50px repeat(24,minmax(12px,1fr));gap:3px;font-size:10px;align-items:center}.clock .cell{aspect-ratio:1;border-radius:3px}.clock .label{color:var(--muted)}
+.rank-table{width:100%;border-collapse:collapse}.rank-table th,.rank-table td{padding:9px 8px;border-bottom:1px solid var(--line);text-align:left}.rank-table th{color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.08em}.owned{color:var(--green)}.missing{color:var(--pink)}
+.pill{display:inline-block;padding:4px 9px;border-radius:99px;background:#ffffff0c;margin:3px;font-size:12px}.split{display:flex;gap:20px;flex-wrap:wrap}.split>*{flex:1 1 240px}
+.playlist-hero{background:linear-gradient(120deg,#1ed76022,#ff6b9e19)}.contributors{display:flex;gap:14px;flex-wrap:wrap}.contributor{flex:1;min-width:180px;padding:16px;background:#ffffff08;border-radius:14px}.contributor strong{font-size:34px;display:block}
+.race-bars{min-height:320px}.race-title{font-size:30px;color:var(--green);font-weight:700;margin:8px 0 18px}
+.tooltip{position:fixed;pointer-events:none;background:#000e;color:white;padding:7px 10px;border-radius:8px;font-size:12px;display:none;z-index:10}
+footer{padding:30px max(18px,5vw);color:var(--muted);border-top:1px solid var(--line)}
+</style>
+</head>
+<body>
+<header>
+  <div class="subtle">A private, local history explorer</div>
+  <h1>My Spotify <span>Atlas</span></h1>
+  <p class="lede" id="range"></p>
+  <div class="controls"><label for="year">View</label><select id="year"></select><button id="download">Download current data</button></div>
+</header>
+<main>
+  <section class="stats" id="stats"></section>
+  <section class="grid">
+    <article class="card span8"><h2>Listening pulse</h2><h3>Hours by month</h3><div id="timeline" class="chart"></div></article>
+    <article class="card span4"><h2>Listening fingerprint</h2><h3>Platforms and session styles</h3><div id="fingerprint"></div></article>
+    <article class="card span12"><h2>Listening calendar</h2><h3>Daily hours; brighter days mean more music</h3><div id="calendar" class="calendar"></div></article>
+    <article class="card span12"><h2>Your listening clock</h2><h3>Weekday × hour heatmap</h3><div id="clock" class="clock"></div></article>
+    <article class="card span6"><h2>Top tracks</h2><h3>Ranked by listening time</h3><div id="tracks"></div></article>
+    <article class="card span6"><h2>Top artists</h2><h3>Who occupied the most time</h3><div id="artists"></div></article>
+    <article class="card span7"><h2>Album depth</h2><h3>Hours and distinct tracks—not just one-hit repeats</h3><div id="albums"></div></article>
+    <article class="card span5"><h2>Discovery vs comfort</h2><h3>New tracks encountered and returning plays</h3><div id="discovery" class="chart"></div></article>
+    <article class="card span12"><h2>The top-track race</h2><h3>Cumulative plays over your complete history</h3><div class="controls"><button id="racePlay">Play</button><input id="raceSlider" type="range" min="0" value="0" style="flex:1"></div><div id="raceMonth" class="race-title"></div><div id="race" class="race-bars"></div></article>
+    <article class="card span4"><h2>Obsession arcs</h2><h3>Most concentrated listening months</h3><div id="obsessions"></div></article>
+    <article class="card span4"><h2>Musical loyalty</h2><h3>Artists sustained across years</h3><div id="loyalty"></div></article>
+    <article class="card span4"><h2>Rediscoveries</h2><h3>Longest gaps before returning</h3><div id="rediscovery"></div></article>
+    <article class="card span12"><h2>Ownership matrix</h2><h3>Favourite albums you own versus high-value purchases</h3><div id="ownership" class="chart"></div></article>
+    <article class="card span12"><h2>Best purchases</h2><h3>Missing albums ranked by actual listening time</h3><div id="purchases"></div></article>
+    <article class="card span12"><h2>Yearly Wrapped</h2><h3>Your headline for every year</h3><div id="wrapped" class="grid"></div></article>
+    <article id="playlistCard" class="card span12 playlist-hero"><h2 id="playlistTitle">Playlist evolution</h2><h3>Additions, contributors and changing musical shape</h3><div id="playlist"></div></article>
+  </section>
+</main>
+<div id="tooltip" class="tooltip"></div>
+<footer id="footer"></footer>
+<script>
+const DATA=__SPOTIFY_DATA__;
+const $=id=>document.getElementById(id), fmt=n=>Number(n).toLocaleString(), esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const colors=["#1ed760","#ff6b9e","#69b7ff","#ffc857","#b7f34a","#b787ff"];
+let selected="all", raceTimer=null;
+function bars(rows,label,value,suffix="",limit=12){
+ const max=Math.max(...rows.slice(0,limit).map(value),1);
+ return `<div class="bars">${rows.slice(0,limit).map(r=>`<div class="bar-row"><div class="bar-label" title="${esc(label(r))}">${esc(label(r))}</div><div class="bar-track"><div class="bar-fill" style="width:${100*value(r)/max}%"></div></div><div class="bar-value">${esc(value(r))}${suffix}</div></div>`).join("")}</div>`;
+}
+function lineChart(rows,key,color="#1ed760"){
+ if(!rows.length)return `<p class=subtle>No data.</p>`; const w=900,h=230,p=30,max=Math.max(...rows.map(r=>r[key]),1);
+ const pts=rows.map((r,i)=>[p+i*(w-2*p)/Math.max(rows.length-1,1),h-p-r[key]*(h-2*p)/max]);
+ const path=pts.map((v,i)=>(i?"L":"M")+v.join(",")).join(" ");
+ return `<svg viewBox="0 0 ${w} ${h}" aria-label="${key} chart"><line class=axis x1=${p} y1=${h-p} x2=${w-p} y2=${h-p}/><path d="${path} L${w-p},${h-p} L${p},${h-p}Z" fill="${color}22"/><path d="${path}" fill=none stroke="${color}" stroke-width=3/>${pts.filter((_,i)=>i%Math.ceil(rows.length/10)==0).map((v,i)=>`<circle cx=${v[0]} cy=${v[1]} r=4 fill="${color}"/>`).join("")}<text x=${p} y=15 fill="#9ab3a6">${max.toFixed(1)} max</text></svg>`;
+}
+function stats(view){
+ const s=view.stats; $("stats").innerHTML=[
+  ["Listening",`${fmt(s.hours)}h`],["Qualifying plays",fmt(s.plays)],["Unique tracks",fmt(s.unique_tracks)],["Unique artists",fmt(s.unique_artists)],["Skip rate",`${s.skip_rate}%`],["On shuffle",`${s.shuffle_rate}%`],["Offline",`${s.offline_rate}%`]
+ ].map(([a,b])=>`<div class="card metric"><small>${a}</small><strong>${b}</strong></div>`).join("");
+}
+function calendar(view){
+ const rows=view.days, max=Math.max(...rows.map(r=>r.hours),1);
+ $("calendar").innerHTML=rows.map(r=>`<span class=day data-tip="${r.date}: ${r.hours}h" style="background:rgba(30,215,96,${.08+.92*Math.sqrt(r.hours/max)})"></span>`).join("");
+}
+function clock(view){
+ const days=["Mon","Tue","Wed","Thu","Fri","Sat","Sun"],max=Math.max(...view.clock,1); let html=`<span></span>${Array.from({length:24},(_,h)=>`<span class=label>${h%3===0?h:""}</span>`).join("")}`;
+ days.forEach((day,d)=>{html+=`<span class=label>${day}</span>`;for(let h=0;h<24;h++){const v=view.clock[d*24+h];html+=`<span class=cell data-tip="${day} ${String(h).padStart(2,"0")}:00: ${v}h" style="background:rgba(105,183,255,${.05+.95*Math.sqrt(v/max)})"></span>`}});
+ $("clock").innerHTML=html;
+}
+function table(rows,type){
+ return `<table class=rank-table><thead><tr><th>#</th><th>${type}</th><th>Artist</th><th>Hours</th><th>Plays</th><th>Owned</th></tr></thead><tbody>${rows.map((r,i)=>`<tr><td>${i+1}</td><td>${esc(r.title)}</td><td>${esc(r.artist)}</td><td>${r.hours}</td><td>${fmt(r.plays)}</td><td class="${r.owned?"owned":"missing"}">${r.owned?"Yes":"No"}</td></tr>`).join("")}</tbody></table>`;
+}
+function fingerprint(view){
+ $("fingerprint").innerHTML=`<h3>Platforms</h3>${bars(view.platforms,r=>r.name,r=>r.hours,"h",6)}<h3 style="margin-top:24px">Sessions</h3>${bars(view.sessions,r=>r.name,r=>r.count,"",6)}`;
+}
+function discovery(){
+ const rows=DATA.long_term.discoveries.filter(r=>selected==="all"||r.month.startsWith(selected));
+ $("discovery").innerHTML=lineChart(rows.map(r=>({...r,ratio:100*(r.discoveries||0)/Math.max((r.discoveries||0)+(r.returns||0),1)})),"ratio","#ffc857")+`<p class=subtle>Percentage of monthly plays that were first encounters.</p>`;
+}
+function insightLists(){
+ $("obsessions").innerHTML=DATA.long_term.obsessions.slice(0,12).map(x=>`<p><strong>${esc(x.title)}</strong><br><span class=subtle>${esc(x.artist)} · ${x.month} · ${x.peak_plays} plays</span></p>`).join("");
+ $("loyalty").innerHTML=DATA.long_term.loyalty.slice(0,12).map(x=>`<p><strong>${esc(x.artist)}</strong><br><span class=subtle>${x.years} years · ${x.hours}h</span></p>`).join("");
+ $("rediscovery").innerHTML=DATA.long_term.rediscoveries.slice(0,12).map(x=>`<p><strong>${esc(x.title)}</strong><br><span class=subtle>${esc(x.artist)} · ${fmt(x.gap_days)} day gap</span></p>`).join("");
+}
+function ownership(view){
+ const rows=view.albums,w=900,h=340,p=45,maxH=Math.max(...rows.map(r=>r.hours),1),maxT=Math.max(...rows.map(r=>r.distinct_tracks||1),1);
+ $("ownership").innerHTML=`<svg viewBox="0 0 ${w} ${h}"><line class=axis x1=${p} y1=${h-p} x2=${w-p} y2=${h-p}/><line class=axis x1=${p} y1=${p} x2=${p} y2=${h-p}/><text x=${w/2} y=${h-8} fill="#9ab3a6">Listening hours →</text><text x=8 y=20 fill="#9ab3a6">Distinct tracks ↑</text>${rows.map(r=>{const x=p+r.hours/maxH*(w-2*p),y=h-p-(r.distinct_tracks||1)/maxT*(h-2*p);return `<circle cx=${x} cy=${y} r=${5+Math.sqrt(r.plays)} fill="${r.owned?"#1ed760":"#ff6b9e"}" opacity=.75 class=data-tip data-tip="${esc(r.title)} — ${esc(r.artist)}: ${r.hours}h, ${r.distinct_tracks} tracks, ${r.owned?"owned":"missing"}"/>`}).join("")}</svg><p class=subtle><span class=owned>● Owned</span> &nbsp; <span class=missing>● Missing</span></p>`;
+}
+function purchases(view){$("purchases").innerHTML=table(view.purchases,"Album")}
+function wrapped(){
+ $("wrapped").innerHTML=Object.entries(DATA.wrapped).reverse().map(([year,w])=>`<div class="card span4"><h2>${year}</h2><p><strong>${fmt(w.stats.hours)} hours</strong> · ${fmt(w.stats.plays)} plays</p><p>Track<br><strong>${esc(w.track?.title||"—")}</strong></p><p>Artist<br><strong>${esc(w.artist?.artist||"—")}</strong></p><p>Album<br><strong>${esc(w.album?.title||"—")}</strong></p></div>`).join("");
+}
+function raceFrame(index){
+ const frames=DATA.race.frames;if(!frames.length)return;index=Math.max(0,Math.min(index,frames.length-1));$("raceSlider").value=index;$("raceMonth").textContent=frames[index].month;
+ const rows=[...frames[index].values].sort((a,b)=>b.plays-a.plays);$("race").innerHTML=bars(rows,r=>r.name,r=>r.plays,"",12);
+}
+function playlist(){
+ const p=DATA.playlist;if(!p||p.error){$("playlistCard").style.display="none";return}$("playlistTitle").textContent=`${p.name}: how it grew`;
+ const names=p.contributors.map(x=>x.name),w=900,h=300,pad=45,max=Math.max(...p.cumulative.flatMap(x=>Object.values(x.values)),1);
+ const paths=names.map((name,n)=>{const pts=p.cumulative.map((x,i)=>[pad+i*(w-2*pad)/Math.max(p.cumulative.length-1,1),h-pad-(x.values[name]||0)/max*(h-2*pad)]);return `<path d="${pts.map((v,i)=>(i?"L":"M")+v.join(",")).join(" ")}" fill=none stroke="${colors[n]}" stroke-width=4/>`}).join("");
+ const legend=names.map((n,i)=>`<span class=pill style="color:${colors[i]}">● ${esc(n)}</span>`).join("");
+ $("playlist").innerHTML=`<div class=contributors>${p.contributors.map(c=>`<div class=contributor><span>${esc(c.name)}</span><strong>${c.count}</strong><small>songs added</small></div>`).join("")}</div><h3 style="margin-top:26px">Cumulative additions</h3>${legend}<svg viewBox="0 0 ${w} ${h}"><line class=axis x1=${pad} y1=${h-pad} x2=${w-pad} y2=${h-pad}/>${paths}</svg><div class=split><div><h3>Playlist's defining artists</h3>${bars(p.top_artists,r=>r.name,r=>r.count,"",12)}</div><div><h3>Recent additions</h3><table class=rank-table>${p.items.slice(-15).reverse().map(x=>`<tr><td>${esc(x.added_at)}</td><td><strong>${esc(x.title)}</strong><br><span class=subtle>${esc(x.artist)}</span></td><td>${esc(x.added_by)}</td></tr>`).join("")}</table></div></div>`;
+}
+function render(){
+ const view=DATA.views[selected];stats(view);$("timeline").innerHTML=lineChart(view.months,"hours");calendar(view);clock(view);fingerprint(view);
+ $("tracks").innerHTML=table(view.tracks.slice(0,15),"Track");$("artists").innerHTML=bars(view.artists,r=>r.artist,r=>r.hours,"h",15);$("albums").innerHTML=table(view.albums.slice(0,18),"Album");
+ discovery();ownership(view);purchases(view);
+}
+const year=$("year");year.innerHTML=`<option value=all>All history</option>`+DATA.years.slice().reverse().map(y=>`<option>${y}</option>`).join("");year.onchange=e=>{selected=e.target.value;render()};
+$("range").textContent=`${DATA.range[0]} to ${DATA.range[1]} · ${fmt(DATA.library_tracks)} owned iTunes tracks indexed · generated locally`;
+$("raceSlider").max=Math.max(DATA.race.frames.length-1,0);$("raceSlider").oninput=e=>raceFrame(+e.target.value);$("racePlay").onclick=()=>{if(raceTimer){clearInterval(raceTimer);raceTimer=null;$("racePlay").textContent="Play";return}$("racePlay").textContent="Pause";raceTimer=setInterval(()=>{let n=+$("raceSlider").value+1;if(n>=DATA.race.frames.length)n=0;raceFrame(n)},650)};
+$("download").onclick=()=>{const blob=new Blob([JSON.stringify(DATA.views[selected],null,2)],{type:"application/json"}),a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download=`spotify-${selected}.json`;a.click();URL.revokeObjectURL(a.href)};
+document.addEventListener("mouseover",e=>{const tip=e.target.closest("[data-tip]");if(!tip)return;$("tooltip").textContent=tip.dataset.tip;$("tooltip").style.display="block"});document.addEventListener("mousemove",e=>{$("tooltip").style.left=e.clientX+12+"px";$("tooltip").style.top=e.clientY+12+"px"});document.addEventListener("mouseout",e=>{if(e.target.closest("[data-tip]"))$("tooltip").style.display="none"});
+$("footer").textContent="Generated by spotify_dashboard.py. The HTML is self-contained and sends no listening data anywhere.";
+render();insightLists();wrapped();playlist();raceFrame(DATA.race.frames.length-1);
+</script>
+</body>
+</html>

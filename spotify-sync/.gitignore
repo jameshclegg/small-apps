@@ -1,0 +1,8 @@
+.cache
+.itunes-search-cache.json
+__pycache__/
+spotify-favorites.md
+spotify-favorites-*.md
+spotify-dashboard.html
+itunes-purchase-guide*.md
+*.m3u8
