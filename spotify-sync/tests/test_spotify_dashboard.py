@@ -33,6 +33,13 @@ class SpotifyDashboardTests(unittest.TestCase):
         self.assertNotIn('stroke-width=3/>', content)
         self.assertNotIn('stroke-width=4/>', content)
 
+    def test_plot_points_include_hover_values(self):
+        template = Path(__file__).parents[1] / "spotify_dashboard_template.html"
+        content = template.read_text(encoding="utf-8")
+        self.assertIn('class="hover-point"', content)
+        self.assertIn('data-tip="${esc(rows[i].month||i+1)}:', content)
+        self.assertIn("songs\"></circle>", content)
+
     def test_discovery_series_separates_first_and_return_plays(self):
         rows = discovery_series(
             [

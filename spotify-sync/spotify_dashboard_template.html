@@ -24,6 +24,7 @@ svg{width:100%;height:auto;overflow:visible}.axis{stroke:#466255;stroke-width:1}
 .playlist-hero{background:linear-gradient(120deg,#1ed76022,#ff6b9e19)}.contributors{display:flex;gap:14px;flex-wrap:wrap}.contributor{flex:1;min-width:180px;padding:16px;background:#ffffff08;border-radius:14px}.contributor strong{font-size:34px;display:block}
 .race-bars{min-height:320px}.race-title{font-size:30px;color:var(--green);font-weight:700;margin:8px 0 18px}
 .tooltip{position:fixed;pointer-events:none;background:#000e;color:white;padding:7px 10px;border-radius:8px;font-size:12px;display:none;z-index:10}
+.hover-point{fill:transparent;stroke:transparent;stroke-width:10;pointer-events:all}.hover-point:hover{fill:var(--text);stroke:var(--text);stroke-width:2}
 footer{padding:30px max(18px,5vw);color:var(--muted);border-top:1px solid var(--line)}
 </style>
 </head>
@@ -70,7 +71,9 @@ function lineChart(rows,key,color="#1ed760"){
  if(!rows.length)return `<p class=subtle>No data.</p>`; const w=900,h=230,p=30,max=Math.max(...rows.map(r=>r[key]),1);
  const pts=rows.map((r,i)=>[p+i*(w-2*p)/Math.max(rows.length-1,1),h-p-r[key]*(h-2*p)/max]);
  const path=pts.map((v,i)=>(i?"L":"M")+v.join(",")).join(" ");
- return `<svg viewBox="0 0 ${w} ${h}" aria-label="${key} chart"><line class="axis" x1="${p}" y1="${h-p}" x2="${w-p}" y2="${h-p}"></line><path d="${path} L${w-p},${h-p} L${p},${h-p}Z" fill="${color}22"></path><path d="${path}" fill="none" stroke="${color}" stroke-width="3"></path>${pts.filter((_,i)=>i%Math.ceil(rows.length/10)==0).map((v,i)=>`<circle cx="${v[0]}" cy="${v[1]}" r="4" fill="${color}"></circle>`).join("")}<text x="${p}" y="15" fill="#9ab3a6">${max.toFixed(1)} max</text></svg>`;
+ const unit=key==="hours"?"h":key==="ratio"?"%":"";
+ const hover=pts.map((v,i)=>`<circle class="hover-point" cx="${v[0]}" cy="${v[1]}" r="7" data-tip="${esc(rows[i].month||i+1)}: ${Number(rows[i][key]).toFixed(1)}${unit}"></circle>`).join("");
+ return `<svg viewBox="0 0 ${w} ${h}" aria-label="${key} chart"><line class="axis" x1="${p}" y1="${h-p}" x2="${w-p}" y2="${h-p}"></line><path d="${path} L${w-p},${h-p} L${p},${h-p}Z" fill="${color}22"></path><path d="${path}" fill="none" stroke="${color}" stroke-width="3"></path>${pts.filter((_,i)=>i%Math.ceil(rows.length/10)==0).map((v,i)=>`<circle cx="${v[0]}" cy="${v[1]}" r="4" fill="${color}"></circle>`).join("")}${hover}<text x="${p}" y="15" fill="#9ab3a6">${max.toFixed(1)} max</text></svg>`;
 }
 function stats(view){
  const s=view.stats; $("stats").innerHTML=[
@@ -116,7 +119,7 @@ function raceFrame(index){
 function playlist(){
  const p=DATA.playlist;if(!p||p.error){$("playlistCard").style.display="none";return}$("playlistTitle").textContent=`${p.name}: how it grew`;
  const names=p.contributors.map(x=>x.name),w=900,h=300,pad=45,max=Math.max(...p.cumulative.flatMap(x=>Object.values(x.values)),1);
- const paths=names.map((name,n)=>{const pts=p.cumulative.map((x,i)=>[pad+i*(w-2*pad)/Math.max(p.cumulative.length-1,1),h-pad-(x.values[name]||0)/max*(h-2*pad)]);return `<path d="${pts.map((v,i)=>(i?"L":"M")+v.join(",")).join(" ")}" fill="none" stroke="${colors[n]}" stroke-width="4"></path>`}).join("");
+ const paths=names.map((name,n)=>{const pts=p.cumulative.map((x,i)=>[pad+i*(w-2*pad)/Math.max(p.cumulative.length-1,1),h-pad-(x.values[name]||0)/max*(h-2*pad)]);const line=`<path d="${pts.map((v,i)=>(i?"L":"M")+v.join(",")).join(" ")}" fill="none" stroke="${colors[n]}" stroke-width="4"></path>`;const hover=pts.map((v,i)=>`<circle class="hover-point" cx="${v[0]}" cy="${v[1]}" r="7" data-tip="${p.cumulative[i].month} · ${esc(name)}: ${p.cumulative[i].values[name]||0} songs"></circle>`).join("");return line+hover}).join("");
  const legend=names.map((n,i)=>`<span class=pill style="color:${colors[i]}">● ${esc(n)}</span>`).join("");
  $("playlist").innerHTML=`<div class=contributors>${p.contributors.map(c=>`<div class=contributor><span>${esc(c.name)}</span><strong>${c.count}</strong><small>songs added</small></div>`).join("")}</div><h3 style="margin-top:26px">Cumulative additions</h3>${legend}<svg viewBox="0 0 ${w} ${h}"><line class="axis" x1="${pad}" y1="${h-pad}" x2="${w-pad}" y2="${h-pad}"></line>${paths}</svg><div class=split><div><h3>Playlist's defining artists</h3>${bars(p.top_artists,r=>r.name,r=>r.count,"",12)}</div><div><h3>Recent additions</h3><table class=rank-table>${p.items.slice(-15).reverse().map(x=>`<tr><td>${esc(x.added_at)}</td><td><strong>${esc(x.title)}</strong><br><span class=subtle>${esc(x.artist)}</span></td><td>${esc(x.added_by)}</td></tr>`).join("")}</table></div></div>`;
 }
