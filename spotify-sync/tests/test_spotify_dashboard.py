@@ -1,5 +1,6 @@
 import unittest
 from datetime import datetime, timezone
+from pathlib import Path
 
 from spotify_dashboard import discovery_series, sessions_for
 
@@ -25,6 +26,13 @@ def event(timestamp, title="Song", album="Album", **overrides):
 
 
 class SpotifyDashboardTests(unittest.TestCase):
+    def test_dynamic_svg_elements_are_explicitly_closed(self):
+        template = Path(__file__).parents[1] / "spotify_dashboard_template.html"
+        content = template.read_text(encoding="utf-8")
+        self.assertNotIn("<line class=axis", content)
+        self.assertNotIn('stroke-width=3/>', content)
+        self.assertNotIn('stroke-width=4/>', content)
+
     def test_discovery_series_separates_first_and_return_plays(self):
         rows = discovery_series(
             [
