@@ -50,7 +50,7 @@ def spotify_client() -> spotipy.Spotify:
     client_id = keyring.get_password(KEYRING_SERVICE, "client-id")
     client_secret = keyring.get_password(KEYRING_SERVICE, "client-secret")
     if not client_id or not client_secret:
-        raise RuntimeError("Run `py spotify_sync.py --configure` first")
+        raise RuntimeError("Run `uv run python spotify_sync.py --configure` first")
     return spotipy.Spotify(
         auth_manager=SpotifyOAuth(
             client_id=client_id,

@@ -270,7 +270,7 @@ def configure_credentials() -> None:
     if keyring is None:
         raise RuntimeError(
             "Secure credential storage requires keyring. "
-            "Run: py -m pip install -r requirements.txt"
+            "Run: uv sync"
         )
     client_id = input("Spotify Client ID: ").strip()
     client_secret = getpass.getpass("Spotify Client Secret (hidden): ").strip()
@@ -299,7 +299,7 @@ def add_spotify_api_favorites(
         from spotipy.oauth2 import SpotifyOAuth
     except ImportError as exc:
         raise RuntimeError(
-            "Spotify API support requires Spotipy. Run: py -m pip install -r requirements.txt"
+            "Spotify API support requires Spotipy. Run: uv sync"
         ) from exc
 
     keyring = credential_store()

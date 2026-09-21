@@ -1,4 +1,5 @@
 .cache
+.venv/
 .itunes-search-cache.json
 __pycache__/
 spotify-favorites.md

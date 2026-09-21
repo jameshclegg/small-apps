@@ -1,0 +1,11 @@
+[project]
+name = "spotify-sync"
+version = "0.1.0"
+description = "Analyze Spotify history and compare it with an iTunes library"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "keyring>=25.6.0,<26",
+    "matplotlib>=3.10.0,<4",
+    "spotipy>=2.26.0,<3",
+]

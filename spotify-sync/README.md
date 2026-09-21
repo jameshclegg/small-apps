@@ -21,11 +21,11 @@ Spotify also requires the app owner to have Premium in Development Mode.
 1. Request **Extended streaming history** from Spotify's account privacy page.
 2. Create an app in the [Spotify developer dashboard](https://developer.spotify.com/dashboard).
 3. Add `http://127.0.0.1:8888/callback` as a redirect URI.
-4. Install the dependency:
+4. Install the dependencies with [uv](https://docs.astral.sh/uv/):
 
 ```powershell
 cd spotify-sync
-py -m pip install -r requirements.txt
+uv sync
 ```
 
 Set the Spotify app credentials in the current PowerShell session:
@@ -45,14 +45,14 @@ tool prompts for the Client ID and a hidden Client Secret; neither value is
 written to disk:
 
 ```powershell
-py spotify_sync.py
+uv run python spotify_sync.py
 ```
 
 To avoid entering credentials on every run, store them in Windows Credential
 Manager. They remain outside the repository:
 
 ```powershell
-py spotify_sync.py --configure
+uv run python spotify_sync.py --configure
 ```
 
 ## Run
@@ -60,13 +60,13 @@ py spotify_sync.py --configure
 Pass the downloaded Spotify ZIP directly:
 
 ```powershell
-py spotify_sync.py --history "$HOME\Downloads\my_spotify_data.zip"
+uv run python spotify_sync.py --history "$HOME\Downloads\my_spotify_data.zip"
 ```
 
 Or pass the extracted export directory:
 
 ```powershell
-py spotify_sync.py --history "$HOME\Downloads\Spotify Extended Streaming History"
+uv run python spotify_sync.py --history "$HOME\Downloads\Spotify Extended Streaming History"
 ```
 
 By default, the tool searches `OneDrive\Music\iTunes` and uses the most recently
@@ -74,7 +74,7 @@ modified XML catalog. On this computer that selects the 2026 catalog in
 `Previous iTunes Libraries`. Override either path when needed:
 
 ```powershell
-py spotify_sync.py `
+uv run python spotify_sync.py `
   --history "$HOME\Downloads\my_spotify_data.zip" `
   --itunes "$HOME\OneDrive\Music\iTunes\iTunes Library.xml" `
   --output "my-favorites.md"
@@ -83,20 +83,20 @@ py spotify_sync.py `
 To generate a history-only report without Spotify API credentials:
 
 ```powershell
-py spotify_sync.py --history "$HOME\Downloads\my_spotify_data.zip" --no-api
+uv run python spotify_sync.py --history "$HOME\Downloads\my_spotify_data.zip" --no-api
 ```
 
 Include tracks from a specific owned playlist by ID or URL:
 
 ```powershell
-py spotify_sync.py --playlist "https://open.spotify.com/playlist/playlist-id"
+uv run python spotify_sync.py --playlist "https://open.spotify.com/playlist/playlist-id"
 ```
 
 Create a UK iTunes Store purchase guide and an importable playlist containing
 the files already owned:
 
 ```powershell
-py itunes_purchase_report.py --playlist "spotify-playlist-id"
+uv run python itunes_purchase_report.py --playlist "spotify-playlist-id"
 ```
 
 The search is intentionally rate-limited to respect Apple's documented limit
@@ -111,7 +111,7 @@ Generate a self-contained local dashboard from any Extended Streaming History
 directory or ZIP:
 
 ```powershell
-py spotify_dashboard.py `
+uv run python spotify_dashboard.py `
   --history "$HOME\OneDrive\Music\my_spotify_data" `
   --playlist "spotify-playlist-id" `
   --output spotify-dashboard.html
@@ -123,6 +123,19 @@ a newer export in the history directory. The generated HTML contains its data
 and visualizations inline, works offline, and sends no listening history to a
 server.
 
+## Playlist addition chart
+
+Generate cumulative additions, gap histograms, weekly activity, busiest weeks,
+and longest-gap summaries from a playlist CSV:
+
+```powershell
+uv run python plot_playlist_additions.py `
+  "$HOME\OneDrive\Music\my_spotify_data\JC-Erykah.csv"
+```
+
+The PNG is written beside the CSV by default. Pass `--output` to choose another
+location.
+
 Plays shorter than 30 seconds are treated as skips. Ownership matching ignores
 punctuation and common remaster, mono, stereo, deluxe, legacy, and anniversary
 labels. Album recommendations require at least two favorite tracks. Review
@@ -131,5 +144,5 @@ compilations and artist-credit differences in the generated report before buying
 ## Test
 
 ```powershell
-py -m unittest discover -s tests -v
+uv run python -m unittest discover -s tests -v
 ```
